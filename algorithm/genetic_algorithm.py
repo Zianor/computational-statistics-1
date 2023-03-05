@@ -29,6 +29,20 @@ def create_individual(X):
     return sortnregress(X, alpha=random.random()/10)
 
 
+def fit_nodes(edges):
+    """Function to fit a DAG where the weight of the edges is unknown
+
+    :param edges: edge matrix with zeros and ones
+    """
+    pass  # TODO: implement regression with given set of nodes
+
+
+def mse(X, W):
+    X_pred = W.T @ X.T
+    X_res = X.T - X_pred
+    return np.mean(X_res**2, axis=1)
+
+
 def evaluate(individual):
     """Fitness function
     """
