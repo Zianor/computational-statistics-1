@@ -53,9 +53,11 @@ def mse(X, W):
 def evaluate(individual):
     """Fitness function
     """
+    W = fit_nodes(individual)
+    X = read_data()
     # TODO: implement fitness function
     # make sure the individual still fulfils the requirements of a DAG
-    return sum(individual),
+    return mse(X,W),
 
 
 def mate(ind1, ind2):
