@@ -1,7 +1,7 @@
 from deap import base, creator, tools
 import random
 import numpy as np
-from sklearn.linear_model import Lasso
+from sklearn.linear_model import Lasso, LinearRegression
 import pandas as pd
 
 def read_data():
@@ -34,7 +34,14 @@ def fit_nodes(edges):
 
     :param edges: edge matrix with zeros and ones
     """
-    pass  # TODO: implement regression with given set of nodes
+    edges_with_weights = np.zeros(edges.shape)
+    for node, incoming_edges in enumerate(edges.T):
+        lr = LinearRegression()
+        if sum(incoming_edges) > 0:
+            incoming_values = X[:, incoming_edges!=0]
+            lr.fit(X[:, incoming_edges!=0], X[:, node].ravel())
+            edges_with_weights[incoming_edges!=0, node] = lr.coef_
+    return edges_with_weights
 
 
 def mse(X, W):
