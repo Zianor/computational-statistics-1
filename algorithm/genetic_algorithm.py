@@ -29,19 +29,23 @@ def create_individual(X):
     return sortnregress(X, alpha=random.random()/10)
 
 
-def fit_nodes(edges):
+def fit_nodes(ind):
     """Function to fit a DAG where the weight of the edges is unknown
 
-    :param edges: edge matrix with zeros and ones
+    :param ind: individual, matrix with zeros and ones
     """
+    edges = np.array(ind)
+    X = read_data()  # TODO: don't read the data repeatedly
     edges_with_weights = np.zeros(edges.shape)
     for node, incoming_edges in enumerate(edges.T):
         lr = LinearRegression()
+        print(np.argwhere(incoming_edges!=0).ravel())
         if sum(incoming_edges) > 0:
-            incoming_values = X[:, incoming_edges!=0]
-            lr.fit(X[:, incoming_edges!=0], X[:, node].ravel())
-            edges_with_weights[incoming_edges!=0, node] = lr.coef_
-    return edges_with_weights
+            incoming_values = X[:, np.argwhere(incoming_edges!=0).ravel()]
+            print(incoming_values.shape)
+            lr.fit(incoming_values, X[:, node].ravel())
+            edges_with_weights[(incoming_edges!=0).ravel(), node] = lr.coef_
+    return edges_with_weights.tolist()
 
 
 def mse(X, W):
@@ -57,6 +61,7 @@ def evaluate(individual):
     X = read_data()
     # TODO: implement fitness function
     # make sure the individual still fulfils the requirements of a DAG
+    # TODO: normally returns two nodes
     return mse(X,W),
 
 
@@ -84,7 +89,7 @@ def mate(ind1, ind2):
 
     # TODO: regression for values
 
-    return child1, child2
+    return child1.tolist(), child2.tolist()
 
 
 def mutate(ind):
