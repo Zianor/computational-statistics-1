@@ -21,12 +21,26 @@ def sortnregress(X, alpha=0.01):
         target = increasing[k]
         lasso.fit(X[:, covariates], X[:, target].ravel())
         weight = np.abs(lasso.coef_)
+        # convert to 0-1
+        weight[weight > 0] = 1
+        
         W[covariates, target] = weight
     return W
 
+# def convert_to_01_graph(X):
+#     return (X != 0).astype(int)
+
 def create_individual(X):
     # TODO better alpha 
-    return sortnregress(X, alpha=random.random()/10)
+
+    # for testing, return 11x11 array
+    # test = np.zeros((11,11))
+    # test[2,1] = 1
+    # test[3,1] = 1
+    # test[0,2] = 1
+    # return test
+    
+    return sortnregress(X, alpha=random.random()/1)
 
 
 def fit_nodes(ind):
@@ -34,18 +48,38 @@ def fit_nodes(ind):
 
     :param ind: individual, matrix with zeros and ones
     """
-    edges = np.array(ind)
+    edges = np.array(ind[0])
     X = read_data()  # TODO: don't read the data repeatedly
     edges_with_weights = np.zeros(edges.shape)
+    #print(f'Edges: {edges}')
+    #print(f'Edges shape: {edges.shape}')
     for node, incoming_edges in enumerate(edges.T):
-        lr = LinearRegression()
-        print(np.argwhere(incoming_edges!=0).ravel())
+        # flatten to 1d
+        incoming_edges = incoming_edges.ravel()
+
         if sum(incoming_edges) > 0:
-            incoming_values = X[:, np.argwhere(incoming_edges!=0).ravel()]
-            print(incoming_values.shape)
-            lr.fit(incoming_values, X[:, node].ravel())
-            edges_with_weights[(incoming_edges!=0).ravel(), node] = lr.coef_
-    return edges_with_weights.tolist()
+            
+            #print(f'For node {node}')
+            #print(f'Incoming edges: {incoming_edges}')
+            edge_filter = np.argwhere(incoming_edges!=0).ravel()
+            #print(f'Edge filter: {edge_filter}')
+            
+            # Our X for the linear regression is the data coming from our incoming edges
+            incoming_values = X[:, edge_filter]
+            #print(f'Incoming values: {incoming_values}')
+            
+            # Our y for the linear regression is the data of the current node
+            node_values = X[:, node]
+            #print(f'Node values: {node_values}')
+
+            lr = LinearRegression(fit_intercept=False) # TODO do we fit an intercept?
+            lr.fit(incoming_values, node_values)
+            #print(f'Weights: {lr.coef_}')
+            #print(f'Intercept: {lr.intercept_}')
+            
+            edges_with_weights[edge_filter, node] = lr.coef_
+            #print(f'Edges with weights: {edges_with_weights}')
+    return edges_with_weights
 
 
 def mse(X, W):
