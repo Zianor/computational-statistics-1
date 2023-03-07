@@ -10,7 +10,7 @@ def read_data():
     return X
 
 def sortnregress(X, alpha=0.01):
-    # TODO: check difference to LR + LL
+    # TODO: discuss difference to LR + LL
     lasso = Lasso(alpha)
 
     d = X.shape[1]
