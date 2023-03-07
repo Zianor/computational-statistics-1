@@ -85,7 +85,9 @@ def fit_nodes(ind):
 def mse(X, W):
     X_pred = W.T @ X.T
     X_res = X.T - X_pred
-    return np.mean(X_res**2, axis=1)
+    error_per_node = np.mean(X_res**2, axis=1)
+    # TODO: how to combine errors? depending on node?
+    return np.mean(error_per_node)
 
 
 def evaluate(individual):
@@ -96,14 +98,15 @@ def evaluate(individual):
     # TODO: implement fitness function
     # make sure the individual still fulfils the requirements of a DAG
     # TODO: normally returns two nodes
-    return mse(X,W),
+    error = mse(X,W)
+    return error,
 
 
 def mate(ind1, ind2):
     """Mating function. Combines to individuals
     """
-    ind1 = np.array(ind1)
-    ind2 = np.array(ind2)
+    ind1 = np.array(ind1[0])
+    ind2 = np.array(ind2[0])
 
     child1 = np.zeros(ind1.shape)
     child2 = np.zeros(ind1.shape)
@@ -118,8 +121,8 @@ def mate(ind1, ind2):
             child1[i,j] = 1
             child2[i,j] = 1
         else:
-            child1[i,j] = random.randint()
-            child2[i,j] = random.randint()
+            child1[i,j] = random.randint(0,1)
+            child2[i,j] = random.randint(0,1)
 
     # TODO: regression for values
 
@@ -135,10 +138,10 @@ def mutate(ind):
     non_zero = np.nonzero(ind)[0]
     
     # choose random index
-    index = random.choice(non_zero)
-
-    # mutate
-    ind[index] = 0
+    if non_zero.size > 0:
+        index = random.choice(non_zero)
+        # mutate
+        ind[index] = 0
 
     # TODO more complex mutation, mutate 0 to n edges, adding edges?
 

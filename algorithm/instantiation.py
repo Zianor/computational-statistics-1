@@ -59,8 +59,7 @@ class CausalDiscoveryGA:
             # Select the next generation individuals
             offspring = self.toolbox.select(pop, len(pop))
             # Clone the selected individuals
-            offspring = map(self.toolbox.clone, offspring)
-
+            offspring = [self.toolbox.clone(ind) for ind in offspring]
             # Apply crossover and mutation on the offspring
             for child1, child2 in zip(offspring[::2], offspring[1::2]):
                 if random.random() < CXPB:
