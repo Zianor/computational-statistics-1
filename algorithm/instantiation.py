@@ -2,6 +2,7 @@ from deap import base, creator, tools
 from algorithm.genetic_algorithm import read_data, create_individual, evaluate, mate, mutate
 import random
 from tqdm import tqdm
+import numpy as np
 
 class CausalDiscoveryGA:
     """Class to instantiate the genetic algorithm.
@@ -20,7 +21,7 @@ class CausalDiscoveryGA:
         """
 
         # minimize fitness  
-        creator.create("FitnessMin", base.Fitness, weights=(-1.0,))
+        creator.create("FitnessMin", base.Fitness, weights=(-1.0,-0.1))
 
         # 2d list to represent DAG
         creator.create("Individual", list, fitness=creator.FitnessMin)
@@ -48,7 +49,7 @@ class CausalDiscoveryGA:
 
         # create initial population
         pop = self.toolbox.population(n=50)
-        CXPB, MUTPB, NGEN = 0.5, 0.2, 100
+        CXPB, MUTPB, NGEN = 0.5, 0.2, 8
 
         # Evaluate the entire population
         fitnesses = map(self.toolbox.evaluate, pop)
@@ -56,6 +57,9 @@ class CausalDiscoveryGA:
             ind.fitness.values = fit
 
         for g in tqdm(range(NGEN)):
+            best_pop = tools.selBest(pop, 50)
+            print(f"Avg individual in generation {g}: {np.mean([evaluate(best, self.X) for best in best_pop])}")
+
             # Select the next generation individuals
             offspring = self.toolbox.select(pop, len(pop))
             # Clone the selected individuals

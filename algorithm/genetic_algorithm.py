@@ -3,6 +3,7 @@ import random
 import numpy as np
 from sklearn.linear_model import Lasso, LinearRegression
 import pandas as pd
+from scipy.linalg import expm
 
 clusters = pd.read_csv('a1_data_clustered.csv')["cluster"]
 
@@ -82,7 +83,8 @@ def evaluate(individual, X):
     # TODO: normally returns two nodes
     # TODO: include number of edges in fitness calculation
     error = mse(X,W)
-    return error,
+    #print(f'Edges in individual: {np.sum(individual[0])}')
+    return error, np.sum(individual[0])
 
 
 def mate(ind1, ind2):
@@ -93,6 +95,8 @@ def mate(ind1, ind2):
 
     child1 = np.zeros(ind1.shape)
     child2 = np.zeros(ind1.shape)
+
+    # TODO implement cycle breaking/removal
 
     for (i, j), _ in np.ndenumerate(ind1):
         # assuming as if 1/0 graph
@@ -116,6 +120,10 @@ def mutate(ind):
     # create list of indices of non-zero elements
     ind = np.array(ind)
     ind = ind.ravel()
+
+    #if has_cycle(ind): # TODO implement cycle breaking/removal
+    #    ind.fitness.valid = False
+
     non_zero = np.nonzero(ind)[0]
     
     # choose random index
@@ -127,3 +135,14 @@ def mutate(ind):
     # TODO more complex mutation, mutate 0 to n edges, adding edges?
 
     return ind,
+    
+def has_cycle(ind) -> bool:
+    """Check if the individual has a cycle
+    """
+
+    graph = np.array(ind[0])
+
+    if np.trace(expm(np.multiply(graph, graph))) == graph.shape[0]:
+    # if 0.5 * np.trace(graph) == np.linalg.matrix_rank(graph):
+        return False
+    return True

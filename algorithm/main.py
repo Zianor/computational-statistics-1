@@ -1,7 +1,7 @@
 from algorithm.instantiation import CausalDiscoveryGA
 from algorithm.utilities import graph
 import numpy as np
-from algorithm.genetic_algorithm import evaluate, mse, sortnregress
+from algorithm.genetic_algorithm import evaluate, sortnregress
 import random
 
 def main():
@@ -16,5 +16,6 @@ def main():
 
 
 if __name__ == "__main__":
-    random.seed(2)
+    #random.seed(2)
+
     main()
