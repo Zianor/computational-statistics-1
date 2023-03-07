@@ -16,6 +16,6 @@ def main():
 
 
 if __name__ == "__main__":
-    #random.seed(2)
+    random.seed(23)
 
     main()

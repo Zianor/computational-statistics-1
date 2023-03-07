@@ -4,6 +4,7 @@ import numpy as np
 from sklearn.linear_model import Lasso, LinearRegression
 import pandas as pd
 from scipy.linalg import expm
+from algorithm.utilities import graph
 
 clusters = pd.read_csv('a1_data_clustered.csv')["cluster"]
 
@@ -13,8 +14,7 @@ def read_data():
     return X
 
 def sortnregress(X, alpha=0.01):
-    # TODO: discuss difference to LR + LL
-    lasso = Lasso(alpha)
+    lasso = Lasso(alpha) # TODO do we fit an intercept?
 
     d = X.shape[1]
     W = np.zeros((d, d))
@@ -60,7 +60,7 @@ def fit_nodes(ind, X):
             # Our y for the linear regression is the data of the current node
             node_values = X[:, node]
 
-            lr = LinearRegression(fit_intercept=False) # TODO do we fit an intercept?
+            lr = LinearRegression() # TODO do we fit an intercept?
             lr.fit(incoming_values, node_values)
             
             edges_with_weights[edge_filter, node] = lr.coef_
@@ -78,12 +78,13 @@ def mse(X, W):
 def evaluate(individual, X):
     """Fitness function
     """
+
+    if has_cycle(individual): # TODO implement cycle breaking/removal
+        return
+
     W = fit_nodes(individual, X)
-    # make sure the individual still fulfils the requirements of a DAG
-    # TODO: normally returns two nodes
-    # TODO: include number of edges in fitness calculation
+    # TODO here also?: make sure the individual still fulfils the requirements of a DAG
     error = mse(X,W)
-    #print(f'Edges in individual: {np.sum(individual[0])}')
     return error, np.sum(individual[0])
 
 
@@ -96,8 +97,6 @@ def mate(ind1, ind2):
     child1 = np.zeros(ind1.shape)
     child2 = np.zeros(ind1.shape)
 
-    # TODO implement cycle breaking/removal
-
     for (i, j), _ in np.ndenumerate(ind1):
         # assuming as if 1/0 graph
         epsilon = 0.001
@@ -108,8 +107,18 @@ def mate(ind1, ind2):
             child1[i,j] = 1
             child2[i,j] = 1
         else:
-            child1[i,j] = random.randint(0,1)
-            child2[i,j] = random.randint(0,1)
+            if random.random() < 0.7:
+                child1[i,j] = 1
+
+            if random.random() < 0.7:
+                child2[i,j] = 1
+
+            # TODO implement better cycle breaking/removal
+            if has_cycle([child1]):
+                child1[i,j] = 0
+            if has_cycle([child2]):
+                child2[i,j] = 0
+
 
     return child1.tolist(), child2.tolist()
 
@@ -120,9 +129,6 @@ def mutate(ind):
     # create list of indices of non-zero elements
     ind = np.array(ind)
     ind = ind.ravel()
-
-    #if has_cycle(ind): # TODO implement cycle breaking/removal
-    #    ind.fitness.valid = False
 
     non_zero = np.nonzero(ind)[0]
     
@@ -140,9 +146,11 @@ def has_cycle(ind) -> bool:
     """Check if the individual has a cycle
     """
 
-    graph = np.array(ind[0])
+    edges = np.array(ind[0])
 
-    if np.trace(expm(np.multiply(graph, graph))) == graph.shape[0]:
+    if np.trace(expm(np.multiply(edges, edges))) == edges.shape[0]:
     # if 0.5 * np.trace(graph) == np.linalg.matrix_rank(graph):
         return False
+    
+    #graph(edges)
     return True

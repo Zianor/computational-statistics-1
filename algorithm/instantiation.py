@@ -1,5 +1,5 @@
 from deap import base, creator, tools
-from algorithm.genetic_algorithm import read_data, create_individual, evaluate, mate, mutate
+from algorithm.genetic_algorithm import read_data, create_individual, evaluate, mate, mutate, has_cycle
 import random
 from tqdm import tqdm
 import numpy as np
@@ -37,7 +37,7 @@ class CausalDiscoveryGA:
         # mate, mutate, select and evaluate functions
         toolbox.register("mate", mate)
         toolbox.register("mutate", mutate)
-        toolbox.register("select", tools.selTournament, tournsize=3)  # TODO: look into selection functions
+        toolbox.register("select", tools.selTournament, tournsize=3)
         toolbox.register("evaluate", evaluate, X=self.X)
 
         self.toolbox = toolbox
@@ -48,8 +48,9 @@ class CausalDiscoveryGA:
         """
 
         # create initial population
-        pop = self.toolbox.population(n=50)
-        CXPB, MUTPB, NGEN = 0.5, 0.2, 8
+        pop = self.toolbox.population(n=100)
+            
+        CXPB, MUTPB, NGEN = 0.5, 0.2, 5
 
         # Evaluate the entire population
         fitnesses = map(self.toolbox.evaluate, pop)
@@ -57,7 +58,7 @@ class CausalDiscoveryGA:
             ind.fitness.values = fit
 
         for g in tqdm(range(NGEN)):
-            best_pop = tools.selBest(pop, 50)
+            best_pop = tools.selBest(pop, 5)
             print(f"Avg individual in generation {g}: {np.mean([evaluate(best, self.X) for best in best_pop])}")
 
             # Select the next generation individuals
