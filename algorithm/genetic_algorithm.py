@@ -27,8 +27,6 @@ def sortnregress(X, alpha=0.01):
         W[covariates, target] = weight
     return W
 
-# def convert_to_01_graph(X):
-#     return (X != 0).astype(int)
 
 def create_individual(X):
     # TODO better alpha 
@@ -87,6 +85,7 @@ def evaluate(individual, X):
     W = fit_nodes(individual, X)
     # make sure the individual still fulfils the requirements of a DAG
     # TODO: normally returns two nodes
+    # TODO: include number of edges in fitness calculation
     error = mse(X,W)
     return error,
 
@@ -102,11 +101,11 @@ def mate(ind1, ind2):
 
     for (i, j), _ in np.ndenumerate(ind1):
         # assuming as if 1/0 graph
-        # TODO check for values close to 0
-        if ind1[i,j] == 0 and ind2[i,j] == 0:
+        epsilon = 0.001
+        if np.abs(ind1[i,j]) < epsilon and np.abs(ind2[i,j]) < epsilon:
             child1[i,j] = 0
             child2[i,j] = 0
-        elif ind1[i,j] != 0 and ind2[i,j] != 0:
+        elif np.abs(ind1[i,j]) >= epsilon and np.abs(ind2[i,j]) >= epsilon:
             child1[i,j] = 1
             child2[i,j] = 1
         else:
