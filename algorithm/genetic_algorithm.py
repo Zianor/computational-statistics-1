@@ -4,6 +4,8 @@ import numpy as np
 from sklearn.linear_model import Lasso, LinearRegression
 import pandas as pd
 
+clusters = pd.read_csv('a1_data_clustered.csv')["cluster"]
+
 def read_data():
     X = pd.read_csv('a1_data.csv') #names=['A','B','C','D','E','F','G','H','I','J','K']
     X = X.values
@@ -29,8 +31,12 @@ def sortnregress(X, alpha=0.01):
 
 
 def create_individual(X):
+    if random.random() < 0.5:
+        cluster = random.choice(range(13))
+        X_ = X[clusters==cluster]
+        return sortnregress(X_, alpha=random.random())
     # TODO better alpha 
-    return sortnregress(X, alpha=random.random()/1)
+    return sortnregress(X, alpha=random.random())
 
 
 def fit_nodes(ind, X):
