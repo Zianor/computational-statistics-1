@@ -40,34 +40,23 @@ def fit_nodes(ind, X):
     """
     edges = np.array(ind[0])
     edges_with_weights = np.zeros(edges.shape)
-    #print(f'Edges: {edges}')
-    #print(f'Edges shape: {edges.shape}')
     for node, incoming_edges in enumerate(edges.T):
         # flatten to 1d
         incoming_edges = incoming_edges.ravel()
 
         if sum(incoming_edges) > 0:
-            
-            #print(f'For node {node}')
-            #print(f'Incoming edges: {incoming_edges}')
             edge_filter = np.argwhere(incoming_edges!=0).ravel()
-            #print(f'Edge filter: {edge_filter}')
             
             # Our X for the linear regression is the data coming from our incoming edges
             incoming_values = X[:, edge_filter]
-            #print(f'Incoming values: {incoming_values}')
             
             # Our y for the linear regression is the data of the current node
             node_values = X[:, node]
-            #print(f'Node values: {node_values}')
 
             lr = LinearRegression(fit_intercept=False) # TODO do we fit an intercept?
             lr.fit(incoming_values, node_values)
-            #print(f'Weights: {lr.coef_}')
-            #print(f'Intercept: {lr.intercept_}')
             
             edges_with_weights[edge_filter, node] = lr.coef_
-            #print(f'Edges with weights: {edges_with_weights}')
     return edges_with_weights
 
 
