@@ -10,8 +10,8 @@ X = read_data()
 def objective(trial):
     alpha_factor = trial.suggest_float("alpha_factor", 0.01, 0.5, log=True)
     use_cluster_inits = trial.suggest_categorical("use_cluster_inits", [True, False])
-    n_pop = trial.suggest_int("n_pop", 10, 100)
-    n_gen = trial.suggest_int("n_gen", 2, 64, log=True)
+    n_pop = trial.suggest_int("n_pop", 1, 100)
+    n_gen = trial.suggest_int("n_gen", 2, 16, log=True)
     causalGA = CausalDiscoveryGA()
     causalGA.initialize_env(alpha_factor=alpha_factor, use_cluster_inits=use_cluster_inits, n_pop=n_pop, n_gen=n_gen)
     best_individual = causalGA.start_ga()
@@ -19,11 +19,11 @@ def objective(trial):
     n_edges = int(np.sum(np.sum(best_individual[0][0] != 0, axis=1), axis=0))
     print(n_edges)
     trial.set_user_attr("n_edges", n_edges)
-    return evaluate(best_individual[0], causalGA.X)
+    return evaluate(best_individual[0], causalGA.X)[0]
 
 def main():
     study = optuna.create_study(study_name="study_1", storage="sqlite:///hyperopt.db", load_if_exists=True, direction="minimize")
-    study.optimize(objective, n_trials=1)
+    study.optimize(objective, n_trials=20)
     best_individual = np.array(study.best_trial.user_attrs["best_individual"])
     graph(np.array(best_individual))
     # fit nodes for best individual
