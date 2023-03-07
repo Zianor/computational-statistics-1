@@ -12,7 +12,7 @@ def main():
     graph(np.array(best_individual[0][0]))
     # fit nodes for best individual
     print(f"MSE over all nodes: {evaluate(best_individual[0], causalGA.X)}")
-    print(f"MSE for sortnregress: {mse(causalGA.X, sortnregress(causalGA.X))}")                            
+    print(f"MSE for sortnregress: {evaluate([sortnregress(causalGA.X)], causalGA.X)}")                            
 
 
 if __name__ == "__main__":
