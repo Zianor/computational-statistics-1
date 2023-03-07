@@ -81,4 +81,7 @@ class CausalDiscoveryGA:
             # The population is entirely replaced by the offspring
             pop[:] = offspring
 
-        return pop
+        # select best individual
+        best_individual = tools.selBest(pop, 1)
+
+        return best_individual
