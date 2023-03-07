@@ -37,7 +37,7 @@ class CausalDiscoveryGA:
         toolbox.register("mate", mate)
         toolbox.register("mutate", mutate)
         toolbox.register("select", tools.selTournament, tournsize=3)  # TODO: look into selection functions
-        toolbox.register("evaluate", evaluate)
+        toolbox.register("evaluate", evaluate, X=self.X)
 
         self.toolbox = toolbox
 
@@ -48,7 +48,7 @@ class CausalDiscoveryGA:
 
         # create initial population
         pop = self.toolbox.population(n=50)
-        CXPB, MUTPB, NGEN = 0.5, 0.2, 40
+        CXPB, MUTPB, NGEN = 0.5, 0.2, 100
 
         # Evaluate the entire population
         fitnesses = map(self.toolbox.evaluate, pop)

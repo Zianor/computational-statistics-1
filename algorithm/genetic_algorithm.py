@@ -32,24 +32,15 @@ def sortnregress(X, alpha=0.01):
 
 def create_individual(X):
     # TODO better alpha 
-
-    # for testing, return 11x11 array
-    # test = np.zeros((11,11))
-    # test[2,1] = 1
-    # test[3,1] = 1
-    # test[0,2] = 1
-    # return test
-    
     return sortnregress(X, alpha=random.random()/1)
 
 
-def fit_nodes(ind):
+def fit_nodes(ind, X):
     """Function to fit a DAG where the weight of the edges is unknown
 
     :param ind: individual, matrix with zeros and ones
     """
     edges = np.array(ind[0])
-    X = read_data()  # TODO: don't read the data repeatedly
     edges_with_weights = np.zeros(edges.shape)
     #print(f'Edges: {edges}')
     #print(f'Edges shape: {edges.shape}')
@@ -90,12 +81,10 @@ def mse(X, W):
     return np.mean(error_per_node)
 
 
-def evaluate(individual):
+def evaluate(individual, X):
     """Fitness function
     """
-    W = fit_nodes(individual)
-    X = read_data()
-    # TODO: implement fitness function
+    W = fit_nodes(individual, X)
     # make sure the individual still fulfils the requirements of a DAG
     # TODO: normally returns two nodes
     error = mse(X,W)
@@ -123,8 +112,6 @@ def mate(ind1, ind2):
         else:
             child1[i,j] = random.randint(0,1)
             child2[i,j] = random.randint(0,1)
-
-    # TODO: regression for values
 
     return child1.tolist(), child2.tolist()
 
