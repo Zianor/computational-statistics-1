@@ -16,16 +16,16 @@ class CausalDiscoveryGA:
         self.IND_SIZE = 1
         self.X = read_data()
         
-    def initialize_env(self, alpha_factor, use_cluster_inits, n_pop, n_gen, select_best=False):
+    def initialize_env(self, alpha_factor, use_cluster_inits, n_pop, n_gen, fit_intercept, select_best=False):
         """Initialize the GA environment.
         """
         self.n_pop = n_pop
         self.n_gen = n_gen
         self.select_best = False
-
+        self.fit_intercept = fit_intercept
 
         # minimize fitness  
-        creator.create("FitnessMin", base.Fitness, weights=(-1.0,-0.1))
+        creator.create("FitnessMin", base.Fitness, weights=(-1.0,-1.0))
 
         # 2d list to represent DAG
         creator.create("Individual", list, fitness=creator.FitnessMin)
@@ -33,7 +33,7 @@ class CausalDiscoveryGA:
         toolbox = base.Toolbox()
 
         # creating population
-        toolbox.register("attribute", create_individual, self.X, alpha_factor, use_cluster_inits)
+        toolbox.register("attribute", create_individual, self.X, alpha_factor, use_cluster_inits, fit_intercept)
         toolbox.register("individual", tools.initRepeat, creator.Individual,
                         toolbox.attribute, n=self.IND_SIZE)
         toolbox.register("population", tools.initRepeat, list, toolbox.individual)
@@ -42,7 +42,7 @@ class CausalDiscoveryGA:
         toolbox.register("mate", mate)
         toolbox.register("mutate", mutate)
         toolbox.register("select", tools.selTournament, tournsize=3)
-        toolbox.register("evaluate", evaluate, X=self.X)
+        toolbox.register("evaluate", evaluate, X=self.X, fit_intercept=fit_intercept)
 
         self.toolbox = toolbox
 
@@ -57,12 +57,13 @@ class CausalDiscoveryGA:
 
         # Evaluate the entire population
         fitnesses = map(self.toolbox.evaluate, pop)
+        fitnesses = filter(lambda x: x is not None, fitnesses)
         for ind, fit in zip(pop, fitnesses):
             ind.fitness.values = fit
 
         for g in tqdm(range(NGEN)):
             best_pop = tools.selBest(pop, 5)
-            print(f"Avg for 5 best individuals in generation {g}: {np.mean([evaluate(best, self.X) for best in best_pop])}")
+            print(f"Avg individual in generation {g}: {np.mean([evaluate(best, self.X, self.fit_intercept) for best in best_pop])}")
 
             # Select the next generation individuals
             offspring = self.toolbox.select(pop, len(pop))
@@ -83,6 +84,7 @@ class CausalDiscoveryGA:
             # Evaluate the individuals with an invalid fitness
             invalid_ind = [ind for ind in offspring if not ind.fitness.valid]
             fitnesses = map(self.toolbox.evaluate, invalid_ind)
+            fitnesses = filter(lambda x: x is not None, fitnesses)
             for ind, fit in zip(invalid_ind, fitnesses):
                 ind.fitness.values = fit
 

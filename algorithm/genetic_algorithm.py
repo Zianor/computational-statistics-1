@@ -13,8 +13,8 @@ def read_data():
     X = X.values
     return X
 
-def sortnregress(X, alpha=0.01):
-    lasso = Lasso(alpha) # TODO do we fit an intercept?
+def sortnregress(X, alpha, fit_intercept):
+    lasso = Lasso(alpha, fit_intercept=fit_intercept) # TODO do we fit an intercept?
 
     d = X.shape[1]
     W = np.zeros((d, d))
@@ -31,16 +31,16 @@ def sortnregress(X, alpha=0.01):
     return W
 
 
-def create_individual(X, alpha_factor, use_cluster_inits):
+def create_individual(X, alpha_factor, use_cluster_inits, fit_intercept):
     if use_cluster_inits and random.random() < 0.5:
         cluster = random.choice(range(13))
         X_ = X[clusters==cluster]
-        return sortnregress(X_, alpha=alpha_factor * random.random())
+        return sortnregress(X_, alpha=alpha_factor * random.random(), fit_intercept=fit_intercept)
     # TODO better alpha 
-    return sortnregress(X, alpha=alpha_factor * random.random())
+    return sortnregress(X, alpha=alpha_factor * random.random(), fit_intercept=fit_intercept)
 
 
-def fit_nodes(ind, X):
+def fit_nodes(ind, X, fit_intercept):
     """Function to fit a DAG where the weight of the edges is unknown
 
     :param ind: individual, matrix with zeros and ones
@@ -60,7 +60,7 @@ def fit_nodes(ind, X):
             # Our y for the linear regression is the data of the current node
             node_values = X[:, node]
 
-            lr = LinearRegression() # TODO do we fit an intercept?
+            lr = LinearRegression(fit_intercept=fit_intercept) # TODO do we fit an intercept?
             lr.fit(incoming_values, node_values)
             
             edges_with_weights[edge_filter, node] = lr.coef_
@@ -75,14 +75,14 @@ def mse(X, W):
     return np.mean(error_per_node)
 
 
-def evaluate(individual, X):
+def evaluate(individual, X, fit_intercept):
     """Fitness function
     """
 
     if has_cycle(individual): # TODO implement cycle breaking/removal
         return
 
-    W = fit_nodes(individual, X)
+    W = fit_nodes(individual, X, fit_intercept)
     # TODO here also?: make sure the individual still fulfils the requirements of a DAG
     error = mse(X,W)
     return error, np.sum(individual[0])

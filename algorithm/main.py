@@ -7,31 +7,47 @@ import optuna
 
 X = read_data()
 
-def objective(trial):
+def objective(trial, return_solution=False):
     alpha_factor = trial.suggest_float("alpha_factor", 0.01, 0.5, log=True)
     use_cluster_inits = trial.suggest_categorical("use_cluster_inits", [True, False])
+    fit_intercept = trial.suggest_categorical("fit_intercept", [True, False])
     select_best = trial.suggest_categorical("select_best", [True, False])
     n_pop = trial.suggest_int("n_pop", 1, 100)
     n_gen = trial.suggest_int("n_gen", 2, 16, log=True)
     causalGA = CausalDiscoveryGA()
     causalGA.initialize_env(alpha_factor=alpha_factor, use_cluster_inits=use_cluster_inits,
-                            n_pop=n_pop, n_gen=n_gen, select_best=select_best)
+                            n_pop=n_pop, n_gen=n_gen, fit_intercept=fit_intercept, select_best=select_best)
     best_individual = causalGA.start_ga()
     trial.set_user_attr("best_individual", best_individual[0][0].tolist())
     n_edges = int(np.sum(np.sum(best_individual[0][0] != 0, axis=1), axis=0))
     print(n_edges)
     trial.set_user_attr("n_edges", n_edges)
-    return evaluate(best_individual[0], causalGA.X)[0]
+    if return_solution:
+        return best_individual[0]
+    return evaluate(best_individual[0], causalGA.X, fit_intercept)[0]
+
+def hyperopt():
+    study = optuna.create_study(study_name="study_1", storage="sqlite:///hyperopt.db", load_if_exists=True, direction="minimize")
+    study.optimize(objective, n_trials=10)
 
 def main():
-    study = optuna.create_study(study_name="study_1", storage="sqlite:///hyperopt.db", load_if_exists=True, direction="minimize")
-    study.optimize(objective, n_trials=20)
-    best_individual = np.array(study.best_trial.user_attrs["best_individual"])
-    graph(np.array(best_individual))
+    fit_intercept = True
+    best_individual = objective(
+        optuna.trial.FixedTrial(
+            {
+                "alpha_factor": 0.02,
+                "use_cluster_inits": True,
+                "fit_intercept": fit_intercept,
+                "n_pop": 100,
+                "n_gen": 8,
+            }
+        ),
+        return_solution=True,
+    )
+    graph(np.array(best_individual[0]))
     # fit nodes for best individual
-    print(f"MSE over all nodes: {evaluate([best_individual], X)}")
-    print(f"MSE for sortnregress: {evaluate([sortnregress(X)], X)}")                            
-
+    print(f"MSE over all nodes: {evaluate([best_individual[0]], X, fit_intercept=fit_intercept)}")
+    print(f"MSE for sortnregress: {evaluate([sortnregress(X, alpha=0.02, fit_intercept=fit_intercept)], X, fit_intercept=fit_intercept)}")
 
 if __name__ == "__main__":
     random.seed(23)
