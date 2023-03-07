@@ -31,13 +31,13 @@ def sortnregress(X, alpha=0.01):
     return W
 
 
-def create_individual(X):
-    if random.random() < 0.5:
+def create_individual(X, alpha_factor, use_cluster_inits):
+    if use_cluster_inits and random.random() < 0.5:
         cluster = random.choice(range(13))
         X_ = X[clusters==cluster]
-        return sortnregress(X_, alpha=random.random())
+        return sortnregress(X_, alpha=alpha_factor * random.random())
     # TODO better alpha 
-    return sortnregress(X, alpha=random.random())
+    return sortnregress(X, alpha=alpha_factor * random.random())
 
 
 def fit_nodes(ind, X):

@@ -8,17 +8,19 @@ class CausalDiscoveryGA:
     """Class to instantiate the genetic algorithm.
     """
 
-    def __init__(self, IND_SIZE: int=1):
+    def __init__(self):
         """Initialize the genetic algorithm.
         """
         self.pop = None
         self.toolbox = None
-        self.IND_SIZE = IND_SIZE
+        self.IND_SIZE = 1
         self.X = read_data()
         
-    def initialize_env(self):
+    def initialize_env(self, alpha_factor, use_cluster_inits, n_pop, n_gen):
         """Initialize the GA environment.
         """
+        self.n_pop = n_pop
+        self.n_gen = n_gen
 
         # minimize fitness  
         creator.create("FitnessMin", base.Fitness, weights=(-1.0,-0.1))
@@ -29,7 +31,7 @@ class CausalDiscoveryGA:
         toolbox = base.Toolbox()
 
         # creating population
-        toolbox.register("attribute", create_individual, self.X)
+        toolbox.register("attribute", create_individual, self.X, alpha_factor, use_cluster_inits)
         toolbox.register("individual", tools.initRepeat, creator.Individual,
                         toolbox.attribute, n=self.IND_SIZE)
         toolbox.register("population", tools.initRepeat, list, toolbox.individual)
@@ -48,9 +50,8 @@ class CausalDiscoveryGA:
         """
 
         # create initial population
-        pop = self.toolbox.population(n=100)
-            
-        CXPB, MUTPB, NGEN = 0.5, 0.2, 5
+        pop = self.toolbox.population(n=self.n_pop)
+        CXPB, MUTPB, NGEN = 0.5, 0.2, self.n_gen
 
         # Evaluate the entire population
         fitnesses = map(self.toolbox.evaluate, pop)
