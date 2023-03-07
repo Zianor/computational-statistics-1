@@ -9,7 +9,7 @@
             "type": "python",
             "request": "launch",
             "module": "algorithm.main",
-            "justMyCode": true
+            "justMyCode": false
         }
     ]
 }
