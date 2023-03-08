@@ -35,7 +35,7 @@ def main():
     best_individual = objective(
         optuna.trial.FixedTrial(
             {
-                "alpha_factor": 0.3,
+                "alpha_factor": 0.1,
                 "use_cluster_inits": True,
                 "fit_intercept": fit_intercept,
                 "n_pop": 50,
