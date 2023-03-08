@@ -47,6 +47,7 @@ def fit_nodes(ind, X, fit_intercept):
     """
     edges = np.array(ind[0])
     edges_with_weights = np.zeros(edges.shape)
+    intercepts = np.zeros((edges.shape[0],1))
     for node, incoming_edges in enumerate(edges.T):
         # flatten to 1d
         incoming_edges = incoming_edges.ravel()
@@ -64,11 +65,12 @@ def fit_nodes(ind, X, fit_intercept):
             lr.fit(incoming_values, node_values)
             
             edges_with_weights[edge_filter, node] = lr.coef_
-    return edges_with_weights
+            intercepts[node] = lr.intercept_
+    return edges_with_weights, intercepts
 
 
-def mse(X, W):
-    X_pred = W.T @ X.T
+def mse(X, W, intercepts):
+    X_pred = intercepts + W.T @ X.T
     X_res = X.T - X_pred
     error_per_node = np.mean(X_res**2, axis=1)
     # TODO: how to combine errors? depending on node?
@@ -87,11 +89,10 @@ def evaluate(individual, X, fit_intercept):
     if has_cycle(individual): # TODO implement cycle breaking/removal
         return
 
-    W = fit_nodes(individual, X, fit_intercept)
+    W, intercepts = fit_nodes(individual, X, fit_intercept)
     # TODO here also?: make sure the individual still fulfils the requirements of a DAG
-    var = variance_of_residuals(X, W)
-    return var, np.sum(individual[0])
-
+    mean_mse = mse(X, W, intercepts)
+    return mean_mse, np.count_nonzero(individual[0])
 
 def mate(ind1, ind2):
     """Mating function. Combines to individuals

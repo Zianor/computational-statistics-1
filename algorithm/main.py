@@ -1,7 +1,7 @@
 from algorithm.instantiation import CausalDiscoveryGA
-from algorithm.utilities import graph
+from algorithm.utilities import graph, sortnregress_classic
 import numpy as np
-from algorithm.genetic_algorithm import evaluate, mse, sortnregress, read_data
+from algorithm.genetic_algorithm import evaluate, read_data, sortnregress
 import random
 import optuna
 
@@ -35,10 +35,10 @@ def main():
     best_individual = objective(
         optuna.trial.FixedTrial(
             {
-                "alpha_factor": 0.02,
+                "alpha_factor": 0.3,
                 "use_cluster_inits": True,
                 "fit_intercept": fit_intercept,
-                "n_pop": 100,
+                "n_pop": 50,
                 "n_gen": 8,
                 "select_best": True,
             }
@@ -47,8 +47,9 @@ def main():
     )
     graph(np.array(best_individual[0]))
     # fit nodes for best individual
-    print(f"VAR over all nodes: {evaluate([best_individual[0]], X, fit_intercept=fit_intercept)}")
-    print(f"VAR for sortnregress: {evaluate([sortnregress(X, alpha=0.02, fit_intercept=fit_intercept)], X, fit_intercept=fit_intercept)}")
+    print(f"MSE over all nodes: {evaluate([best_individual[0]], X, fit_intercept=fit_intercept)}")
+    print(f"MSE for classic sortnregress: {evaluate([sortnregress_classic(X)], X, fit_intercept=fit_intercept)}")
+    print(f"MSE for lasso-regr. sortnregress: {evaluate([sortnregress(X, alpha=0.02, fit_intercept=fit_intercept)], X, fit_intercept=fit_intercept)}")
 
 if __name__ == "__main__":
     random.seed(23)
