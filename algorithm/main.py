@@ -40,6 +40,7 @@ def main():
                 "fit_intercept": fit_intercept,
                 "n_pop": 100,
                 "n_gen": 8,
+                "select_best": True,
             }
         ),
         return_solution=True,

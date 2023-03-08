@@ -63,7 +63,7 @@ class CausalDiscoveryGA:
 
         for g in tqdm(range(NGEN)):
             best_pop = tools.selBest(pop, 5)
-            print(f"Avg individual in generation {g}: {np.mean([evaluate(best, self.X, self.fit_intercept) for best in best_pop])}")
+            print(f"Avg for 5 best individuals in generation {g}: {np.mean([evaluate(best, self.X, self.fit_intercept) for best in best_pop])}")
 
             # Select the next generation individuals
             offspring = self.toolbox.select(pop, len(pop))
