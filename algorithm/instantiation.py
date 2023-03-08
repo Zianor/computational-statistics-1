@@ -16,7 +16,8 @@ class CausalDiscoveryGA:
         self.IND_SIZE = 1
         self.X = read_data()
         
-    def initialize_env(self, alpha_factor, use_cluster_inits, n_pop, n_gen, fit_intercept, select_best=False):
+    def initialize_env(self, alpha_factor, use_cluster_inits, n_pop, n_gen, fit_intercept, edge_addition_probability=0.7,
+                       select_best=False):
         """Initialize the GA environment.
         """
         self.n_pop = n_pop
@@ -39,7 +40,7 @@ class CausalDiscoveryGA:
         toolbox.register("population", tools.initRepeat, list, toolbox.individual)
 
         # mate, mutate, select and evaluate functions
-        toolbox.register("mate", mate)
+        toolbox.register("mate", mate, edge_addition_probability=edge_addition_probability)
         toolbox.register("mutate", mutate)
         toolbox.register("select", tools.selTournament, tournsize=3)
         toolbox.register("evaluate", evaluate, X=self.X, fit_intercept=fit_intercept)

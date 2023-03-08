@@ -14,7 +14,7 @@ def read_data():
     return X
 
 def sortnregress(X, alpha, fit_intercept):
-    lasso = Lasso(alpha, fit_intercept=fit_intercept) # TODO do we fit an intercept?
+    lasso = Lasso(alpha, fit_intercept=fit_intercept)
 
     d = X.shape[1]
     W = np.zeros((d, d))
@@ -36,7 +36,6 @@ def create_individual(X, alpha_factor, use_cluster_inits, fit_intercept):
         cluster = random.choice(range(13))
         X_ = X[clusters==cluster]
         return sortnregress(X_, alpha=alpha_factor * random.random(), fit_intercept=fit_intercept)
-    # TODO better alpha 
     return sortnregress(X, alpha=alpha_factor * random.random(), fit_intercept=fit_intercept)
 
 
@@ -61,7 +60,7 @@ def fit_nodes(ind, X, fit_intercept):
             # Our y for the linear regression is the data of the current node
             node_values = X[:, node]
 
-            lr = LinearRegression(fit_intercept=fit_intercept) # TODO do we fit an intercept?
+            lr = LinearRegression(fit_intercept=fit_intercept)
             lr.fit(incoming_values, node_values)
             
             edges_with_weights[edge_filter, node] = lr.coef_
@@ -73,7 +72,6 @@ def mse(X, W, intercepts):
     X_pred = intercepts + W.T @ X.T
     X_res = X.T - X_pred
     error_per_node = np.mean(X_res**2, axis=1)
-    # TODO: how to combine errors? depending on node?
     return np.mean(error_per_node)
 
 def variance_of_residuals(X, W):
@@ -86,15 +84,14 @@ def evaluate(individual, X, fit_intercept):
     """Fitness function
     """
 
-    if has_cycle(individual): # TODO implement cycle breaking/removal
+    if has_cycle(individual):
         return
 
     W, intercepts = fit_nodes(individual, X, fit_intercept)
-    # TODO here also?: make sure the individual still fulfils the requirements of a DAG
     mean_mse = mse(X, W, intercepts)
     return mean_mse, np.count_nonzero(individual[0])
 
-def mate(ind1, ind2):
+def mate(ind1, ind2, edge_addition_probability=0.7):
     """Mating function. Combines to individuals
     """
     ind1 = np.array(ind1[0])
@@ -113,18 +110,15 @@ def mate(ind1, ind2):
             child1[i,j] = 1
             child2[i,j] = 1
         else:
-            if random.random() < 0.7:
+            if random.random() < edge_addition_probability:
                 child1[i,j] = 1
+                if has_cycle([child1]):  # better cycle removal?
+                    child1[i,j] = 0
 
-            if random.random() < 0.7:
+            if random.random() < edge_addition_probability:
                 child2[i,j] = 1
-
-            # TODO implement better cycle breaking/removal
-            if has_cycle([child1]):
-                child1[i,j] = 0
-            if has_cycle([child2]):
-                child2[i,j] = 0
-
+                if has_cycle([child2]):  # better cycle removal?
+                    child2[i,j] = 0            
 
     return child1.tolist(), child2.tolist()
 
@@ -154,9 +148,4 @@ def has_cycle(ind) -> bool:
 
     edges = np.array(ind[0])
 
-    if np.trace(expm(np.multiply(edges, edges))) == edges.shape[0]:
-    # if 0.5 * np.trace(graph) == np.linalg.matrix_rank(graph):
-        return False
-    
-    #graph(edges)
-    return True
+    return np.trace(expm(np.multiply(edges, edges))) != edges.shape[0]

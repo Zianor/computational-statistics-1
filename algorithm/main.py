@@ -41,6 +41,7 @@ def main():
                 "n_pop": 50,
                 "n_gen": 8,
                 "select_best": True,
+                "edge_addition_probability": 0.7
             }
         ),
         return_solution=True,
