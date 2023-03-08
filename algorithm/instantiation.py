@@ -16,11 +16,13 @@ class CausalDiscoveryGA:
         self.IND_SIZE = 1
         self.X = read_data()
         
-    def initialize_env(self, alpha_factor, use_cluster_inits, n_pop, n_gen):
+    def initialize_env(self, alpha_factor, use_cluster_inits, n_pop, n_gen, select_best=False):
         """Initialize the GA environment.
         """
         self.n_pop = n_pop
         self.n_gen = n_gen
+        self.select_best = False
+
 
         # minimize fitness  
         creator.create("FitnessMin", base.Fitness, weights=(-1.0,-0.1))
@@ -60,7 +62,7 @@ class CausalDiscoveryGA:
 
         for g in tqdm(range(NGEN)):
             best_pop = tools.selBest(pop, 5)
-            print(f"Avg individual in generation {g}: {np.mean([evaluate(best, self.X) for best in best_pop])}")
+            print(f"Avg for 5 best individuals in generation {g}: {np.mean([evaluate(best, self.X) for best in best_pop])}")
 
             # Select the next generation individuals
             offspring = self.toolbox.select(pop, len(pop))
@@ -84,8 +86,12 @@ class CausalDiscoveryGA:
             for ind, fit in zip(invalid_ind, fitnesses):
                 ind.fitness.values = fit
 
-            # The population is entirely replaced by the offspring
-            pop[:] = offspring
+            if not self.select_best:
+                # The population is entirely replaced by the offspring
+                pop[:] = offspring
+            else:
+                # select the best from population and offspring
+                pop[:] = self.toolbox.select(pop + offspring, len(pop))
 
         # select best individual
         best_individual = tools.selBest(pop, 1)
