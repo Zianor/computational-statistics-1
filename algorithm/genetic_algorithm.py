@@ -140,7 +140,7 @@ def mutate(ind):
 
     # TODO more complex mutation, mutate 0 to n edges, adding edges?
 
-    return ind,
+    return ind, True
     
 def has_cycle(ind) -> bool:
     """Check if the individual has a cycle
