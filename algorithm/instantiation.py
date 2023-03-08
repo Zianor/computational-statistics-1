@@ -22,7 +22,7 @@ class CausalDiscoveryGA:
         """
         self.n_pop = n_pop
         self.n_gen = n_gen
-        self.select_best = False
+        self.select_best = select_best
         self.fit_intercept = fit_intercept
 
         # minimize fitness  
