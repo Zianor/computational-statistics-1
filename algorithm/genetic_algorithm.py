@@ -31,12 +31,13 @@ def sortnregress(X, alpha, fit_intercept):
     return W
 
 
-def create_individual(X, alpha_factor, use_cluster_inits, fit_intercept):
+def create_individual(X, alpha_exponent, use_cluster_inits, fit_intercept):
+    alpha = 10 ** -random.uniform(1,alpha_exponent)
     if use_cluster_inits and random.random() < 0.5:
         cluster = random.choice(range(13))
         X_ = X[clusters==cluster]
-        return sortnregress(X_, alpha=alpha_factor * random.random(), fit_intercept=fit_intercept)
-    return sortnregress(X, alpha=alpha_factor * random.random(), fit_intercept=fit_intercept)
+        return sortnregress(X_, alpha=alpha, fit_intercept=fit_intercept)
+    return sortnregress(X, alpha=alpha, fit_intercept=fit_intercept)
 
 
 def fit_nodes(ind, X, fit_intercept):

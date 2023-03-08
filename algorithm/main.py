@@ -8,14 +8,14 @@ import optuna
 X = read_data()
 
 def objective(trial, return_solution=False):
-    alpha_factor = trial.suggest_float("alpha_factor", 0.01, 0.5, log=True)
+    alpha_exponent = trial.suggest_float("alpha_exponent", 2, 10)
     use_cluster_inits = trial.suggest_categorical("use_cluster_inits", [True, False])
     fit_intercept = trial.suggest_categorical("fit_intercept", [True, False])
     select_best = trial.suggest_categorical("select_best", [True, False])
     n_pop = trial.suggest_int("n_pop", 1, 100)
     n_gen = trial.suggest_int("n_gen", 2, 16, log=True)
     causalGA = CausalDiscoveryGA()
-    causalGA.initialize_env(alpha_factor=alpha_factor, use_cluster_inits=use_cluster_inits,
+    causalGA.initialize_env(alpha_exponent=alpha_exponent, use_cluster_inits=use_cluster_inits,
                             n_pop=n_pop, n_gen=n_gen, fit_intercept=fit_intercept, select_best=select_best)
     best_individual = causalGA.start_ga()
     trial.set_user_attr("best_individual", best_individual[0][0].tolist())
@@ -35,13 +35,13 @@ def main():
     best_individual = objective(
         optuna.trial.FixedTrial(
             {
-                "alpha_factor": 0.1,
+                "alpha_exponent": 2,
                 "use_cluster_inits": True,
                 "fit_intercept": fit_intercept,
-                "n_pop": 50,
+                "n_pop": 100,
                 "n_gen": 8,
                 "select_best": True,
-                "edge_addition_probability": 0.7
+                "edge_addition_probability": 0.5
             }
         ),
         return_solution=True,
@@ -50,7 +50,7 @@ def main():
     # fit nodes for best individual
     print(f"MSE over all nodes: {evaluate([best_individual[0]], X, fit_intercept=fit_intercept)}")
     print(f"MSE for classic sortnregress: {evaluate([sortnregress_classic(X)], X, fit_intercept=fit_intercept)}")
-    print(f"MSE for lasso-regr. sortnregress: {evaluate([sortnregress(X, alpha=0.02, fit_intercept=fit_intercept)], X, fit_intercept=fit_intercept)}")
+    print(f"MSE for lasso-regr. sortnregress: {evaluate([sortnregress(X, alpha=0.01, fit_intercept=fit_intercept)], X, fit_intercept=fit_intercept)}")
 
 if __name__ == "__main__":
     random.seed(23)

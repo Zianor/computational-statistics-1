@@ -16,7 +16,7 @@ class CausalDiscoveryGA:
         self.IND_SIZE = 1
         self.X = read_data()
         
-    def initialize_env(self, alpha_factor, use_cluster_inits, n_pop, n_gen, fit_intercept, edge_addition_probability=0.7,
+    def initialize_env(self, alpha_exponent, use_cluster_inits, n_pop, n_gen, fit_intercept, edge_addition_probability=0.7,
                        select_best=False):
         """Initialize the GA environment.
         """
@@ -34,7 +34,7 @@ class CausalDiscoveryGA:
         toolbox = base.Toolbox()
 
         # creating population
-        toolbox.register("attribute", create_individual, self.X, alpha_factor, use_cluster_inits, fit_intercept)
+        toolbox.register("attribute", create_individual, self.X, alpha_exponent, use_cluster_inits, fit_intercept)
         toolbox.register("individual", tools.initRepeat, creator.Individual,
                         toolbox.attribute, n=self.IND_SIZE)
         toolbox.register("population", tools.initRepeat, list, toolbox.individual)
@@ -64,7 +64,9 @@ class CausalDiscoveryGA:
 
         for g in tqdm(range(NGEN)):
             best_pop = tools.selBest(pop, 10)
-            print(f"Avg for 10 best individuals in generation {g}: {np.mean([evaluate(best, self.X, self.fit_intercept) for best in best_pop])}")
+            evaluated = [evaluate(best, self.X, self.fit_intercept) for best in best_pop]
+            evaluated = [best for best in evaluated if best is not None]  # in case we have invalid DAGs
+            print(f"Avg for 10 best individuals in generation {g}: {np.mean(evaluated)}")
             # print number of edges of each individual
             print(f"n_edges for 10 best individuals in generation {g}: {[np.sum(np.sum(best[0])) for best in best_pop]}")
 
