@@ -74,6 +74,11 @@ def mse(X, W):
     # TODO: how to combine errors? depending on node?
     return np.mean(error_per_node)
 
+def variance_of_residuals(X, W):
+    X_pred = W.T @ X.T
+    X_res = X.T - X_pred
+    var = np.var(X_res, axis=1)
+    return np.mean(var)
 
 def evaluate(individual, X, fit_intercept):
     """Fitness function
@@ -84,8 +89,8 @@ def evaluate(individual, X, fit_intercept):
 
     W = fit_nodes(individual, X, fit_intercept)
     # TODO here also?: make sure the individual still fulfils the requirements of a DAG
-    error = mse(X,W)
-    return error, np.sum(individual[0])
+    var = variance_of_residuals(X, W)
+    return var, np.sum(individual[0])
 
 
 def mate(ind1, ind2):

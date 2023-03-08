@@ -47,8 +47,8 @@ def main():
     )
     graph(np.array(best_individual[0]))
     # fit nodes for best individual
-    print(f"MSE over all nodes: {evaluate([best_individual[0]], X, fit_intercept=fit_intercept)}")
-    print(f"MSE for sortnregress: {evaluate([sortnregress(X, alpha=0.02, fit_intercept=fit_intercept)], X, fit_intercept=fit_intercept)}")
+    print(f"VAR over all nodes: {evaluate([best_individual[0]], X, fit_intercept=fit_intercept)}")
+    print(f"VAR for sortnregress: {evaluate([sortnregress(X, alpha=0.02, fit_intercept=fit_intercept)], X, fit_intercept=fit_intercept)}")
 
 if __name__ == "__main__":
     random.seed(23)
