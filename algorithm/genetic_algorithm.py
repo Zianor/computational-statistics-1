@@ -75,14 +75,14 @@ def mse(X, W, intercepts):
     error_per_node = np.mean(X_res**2, axis=1)
     return np.mean(error_per_node)
 
-def variance_of_residuals(X, W):
-    X_pred = W.T @ X.T
+def variance_of_residuals(X, W, intercepts):
+    X_pred = intercepts + W.T @ X.T
     X_res = X.T - X_pred
     var = np.var(X_res, axis=1)
     return np.mean(var)
 
 def evaluate(individual, X, fit_intercept):
-    """Fitness function
+    """Fitness function using MSE.
     """
 
     if has_cycle(individual):
@@ -91,6 +91,17 @@ def evaluate(individual, X, fit_intercept):
     W, intercepts = fit_nodes(individual, X, fit_intercept)
     mean_mse = mse(X, W, intercepts)
     return mean_mse, np.count_nonzero(individual[0])
+
+def evaluate_var(individual, X, fit_intercept):
+    """Fitness function using Variance.
+    """
+
+    if has_cycle(individual):
+        return
+
+    W, intercepts = fit_nodes(individual, X, fit_intercept)
+    mean_var = variance_of_residuals(X, W, intercepts)
+    return mean_var, np.count_nonzero(individual[0])
 
 def mate(ind1, ind2, edge_addition_probability=0.7):
     """Mating function. Combines to individuals

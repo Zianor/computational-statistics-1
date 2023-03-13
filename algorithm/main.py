@@ -1,7 +1,7 @@
 from algorithm.instantiation import CausalDiscoveryGA
 from algorithm.utilities import graph, sortnregress_classic
 import numpy as np
-from algorithm.genetic_algorithm import evaluate, read_data, sortnregress
+from algorithm.genetic_algorithm import evaluate, evaluate_var, read_data, sortnregress
 import random
 import optuna
 
@@ -14,6 +14,7 @@ def objective(trial, return_solution=False):
     select_best = trial.suggest_categorical("select_best", [True, False])
     n_pop = trial.suggest_int("n_pop", 1, 100)
     n_gen = trial.suggest_int("n_gen", 2, 16, log=True)
+    print(f'Fit intercept {fit_intercept}')
     causalGA = CausalDiscoveryGA()
     causalGA.initialize_env(alpha_exponent=alpha_exponent, use_cluster_inits=use_cluster_inits,
                             n_pop=n_pop, n_gen=n_gen, fit_intercept=fit_intercept, select_best=select_best)
@@ -31,7 +32,7 @@ def hyperopt():
     study.optimize(objective, n_trials=10)
 
 def main():
-    fit_intercept = True
+    fit_intercept = False
     best_individual = objective(
         optuna.trial.FixedTrial(
             {
@@ -49,8 +50,11 @@ def main():
     graph(np.array(best_individual[0]))
     # fit nodes for best individual
     print(f"MSE over all nodes: {evaluate([best_individual[0]], X, fit_intercept=fit_intercept)}")
+    print(f"Var over all nodes: {evaluate_var([best_individual[0]], X, fit_intercept=fit_intercept)}")
     print(f"MSE for classic sortnregress: {evaluate([sortnregress_classic(X)], X, fit_intercept=fit_intercept)}")
+    print(f"Var for classic sortnregress: {evaluate_var([sortnregress_classic(X)], X, fit_intercept=fit_intercept)}")
     print(f"MSE for lasso-regr. sortnregress: {evaluate([sortnregress(X, alpha=0.01, fit_intercept=fit_intercept)], X, fit_intercept=fit_intercept)}")
+    print(f"Var for lasso-regr. sortnregress: {evaluate_var([sortnregress(X, alpha=0.01, fit_intercept=fit_intercept)], X, fit_intercept=fit_intercept)}")
 
 if __name__ == "__main__":
     random.seed(23)
